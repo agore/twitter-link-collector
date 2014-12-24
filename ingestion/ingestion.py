@@ -69,7 +69,7 @@ def dumpStatusesToDb(statuses):
         else :
             url2 = ""
         ts = time.strftime("%Y-%m-%d %H:%M:%S", time.strptime(status.created_at, "%a %b %d %H:%M:%S +0000 %Y"))
-        tweet_insert = ("INSERT INTO tweets (id, name, screen_name, tweet, avatar_url, ts, url1, url2) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
+        tweet_insert = ("INSERT INTO tweet (id, name, screen_name, tweet, avatar_url, ts, url1, url2) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
         tweet_data = (status.id, status.user.name, status.user.screen_name, status.text, status.user.profile_image_url, ts, url1, url2)
         cursor.execute(tweet_insert, tweet_data)
     cnx.commit()
