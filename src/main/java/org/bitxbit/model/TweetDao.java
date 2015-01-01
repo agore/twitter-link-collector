@@ -24,7 +24,7 @@ public class TweetDao {
         return null;
     }
 
-    public List<Tweet> getTweets(int length) {
+    public List<Tweet> getTweets(int length, long beforeId) {
         Connection con = getConnection();
         if (con == null) {
             return Collections.EMPTY_LIST;
@@ -34,7 +34,9 @@ public class TweetDao {
         ResultSet rs = null;
         try {
             stmt = con.createStatement();
-            rs = stmt.executeQuery("select * from lh.tweet where (url1 is not null and url1 != \"\") order by id desc limit " + length);
+            String beforeSubQuery = beforeId != 0 ? String.format("and id < %1$s", beforeId) : "";
+            String query = String.format("select * from lh.tweet where (url1 is not null and url1 != \"\") %1$s order by id desc limit %2$s", beforeSubQuery, length);
+            rs = stmt.executeQuery(query);
             List<Tweet> tweets = new ArrayList<Tweet>(length);
             while (rs.next()) {
                 Tweet.TweetBuilder tb = new Tweet.TweetBuilder();

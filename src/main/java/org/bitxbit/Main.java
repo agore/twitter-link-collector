@@ -54,11 +54,11 @@ public class Main {
 
         // Tells the Jersey Servlet which REST service/class to load.
         Map<String, String> initParams = new HashMap<String, String>();
-        initParams.put("jersey.config.server.provider.classnames", MyResource.class.getCanonicalName());
+        initParams.put("jersey.config.server.provider.classnames", TweetResource.class.getCanonicalName());
         initParams.put("javax.ws.rs.Application", JerseyApplication.class.getCanonicalName());
 //        jerseyServlet.setInitParameter(
 //                "jersey.config.server.provider.classnames",
-//                MyResource.class.getCanonicalName());
+//             TweetResourcerce.class.getCanonicalName());
         jerseyServlet.setInitParameters(initParams);
 
         try {
