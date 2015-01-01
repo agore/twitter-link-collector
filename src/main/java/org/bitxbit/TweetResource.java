@@ -16,6 +16,12 @@ import javax.ws.rs.core.CacheControl;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Request tweets as follows:
+ * /tweets/all?count=3 to get the 3 newest tweets
+ * OR
+ * /tweets/all?count=3&lowest_id=550482545356181504 to get 2 tweets that have ids lower than lowest_id (i.e. older than lowest_id)
+ */
 @Path("tweets")
 public class TweetResource {
     @GET
