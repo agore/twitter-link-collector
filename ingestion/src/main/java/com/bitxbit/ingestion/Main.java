@@ -31,13 +31,15 @@ public class Main {
         auth(twitter);
         Config conf = readConfig();
         Paging paging = getPaging(conf.sinceId, 0);
+        int total = 0;
+        int discarded = 0;
         List<Status> statuses = readTimeline(twitter, paging);
         if (statuses.isEmpty()) {
             System.out.println("No tweets found at initialization. Exiting now");
             return;
         }
-
-        dumpStatusesToDb(statuses);
+        total += statuses.size();
+        discarded += dumpStatusesToDb(statuses);
         conf.sinceId = statuses.get(0).getId();
         long tempMaxId = statuses.get(statuses.size() - 1).getId() - 1;
 
@@ -52,17 +54,22 @@ public class Main {
                 break;
             }
             conf.maxId = tempMaxId;
-            statuses = readTimeline(twitter, getPaging(conf.sinceId, conf.maxId));
+            statuses = readTimeline(twitter, getPaging(0, conf.maxId));
             if (statuses.isEmpty()) {
                 System.out.println("No statuses on loop " + loop);
                 break;
             }
+            total += statuses.size();
+            discarded += dumpStatusesToDb(statuses);
             tempMaxId = statuses.get(statuses.size() - 1).getId() - 1;
             loop++;
         }
 
         writeConfig(conf);
 //        main.readTimeline(twitter, null);
+        System.out.println("Processed: " + total);
+        System.out.println("Wrote: " + (total - discarded));
+        System.out.println("Discarded: " + discarded);
 
     }
 
@@ -72,7 +79,10 @@ public class Main {
             paging = new Paging(1, NUM_TWEETS);
         } else if (maxId == 0 && sinceId != 0) {
             paging = new Paging(1, NUM_TWEETS, sinceId);
-        } else  {
+        } else if (maxId != 0 && sinceId == 0) {
+            paging = new Paging(1, NUM_TWEETS);
+            paging.setMaxId(maxId);
+        } else {
             paging = new Paging(1, NUM_TWEETS, sinceId, maxId);
         }
         return paging;
@@ -130,19 +140,19 @@ public class Main {
             e.printStackTrace();
         }
 
-        System.out.println("Config : max_id" + config.maxId + " :: since_id " + config.sinceId);
+        System.out.println("Config : max_id " + config.maxId + " :: since_id " + config.sinceId);
     }
 
-    public void dumpStatusesToDb(List<Status> statuses) {
+    public int dumpStatusesToDb(List<Status> statuses) {
         Connection conn = null;
         PreparedStatement stmt = null;
+        int discarded = 0;
 
         try {
             conn = getConnection();
-            if (conn == null) return;
+            if (conn == null) return 0;
             stmt = conn.prepareStatement("INSERT INTO lh.tweet (id, name, screen_name, tweet, avatar_url, " +
-                    "orig_name, orig_screen_name, orig_avatar_url, ts, url1, url2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            int discarded = 0;
+                    "orig_name, orig_screen_name, orig_avatar_url, ts, url1, url2, media_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             for (Status s : statuses) {
                 if (s.getURLEntities() == null || s.getURLEntities().length == 0) {
                     discarded++;
@@ -165,19 +175,22 @@ public class Main {
                     stmt.setString(8, null);
                 }
                 stmt.setString(9, format(s.getCreatedAt()));
-                stmt.setString(10, s.getURLEntities()[0].getDisplayURL());
-                stmt.setString(11, (urls.length > 1 ? s.getURLEntities()[1].getDisplayURL() : ""));
+                stmt.setString(10, s.getURLEntities()[0].getExpandedURL());
+                stmt.setString(11, (urls.length > 1 ? s.getURLEntities()[1].getExpandedURL() : null));
+
+
+                if (s.getMediaEntities() != null && s.getMediaEntities().length > 0) {
+                    stmt.setString(12, s.getMediaEntities()[0].getMediaURL());
+                } else {
+                    stmt.setString(12, null);
+                }
                 stmt.addBatch();
-
-
 //                System.out.println(String.format("%1$s :: %2$s :: %3$s :: %4$s :: %5$s :: %6$s :: %7$s\n",
 //                        s.getId(), s.getUser().getName(), s.getUser().getScreenName(), s.getText(), s.getUser().getProfileImageURL(),
 //                        format(s.getCreatedAt()), urls[0].getDisplayURL(),
 //                        (urls.length > 1 ? s.getURLEntities()[1].getDisplayURL() : "")));
 
             }
-
-        System.out.println("discarded " + discarded);
 
             stmt.executeBatch();
         } catch (SQLException e) {
@@ -186,6 +199,8 @@ public class Main {
             if (stmt != null) try { stmt.close(); } catch(Exception e) {}
             if (conn != null) try { conn.close(); } catch(Exception e) {}
         }
+
+        return discarded;
     }
 
     private String format(Date createdAt) {
