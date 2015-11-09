@@ -152,7 +152,8 @@ public class Main {
             conn = getConnection();
             if (conn == null) return 0;
             stmt = conn.prepareStatement("INSERT INTO lh.tweet (id, name, screen_name, tweet, avatar_url, " +
-                    "orig_name, orig_screen_name, orig_avatar_url, ts, url1, url2, media_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    "orig_name, orig_screen_name, orig_avatar_url, ts, url1, url2, media_url) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ts=?");
             for (Status s : statuses) {
                 if (s.getURLEntities() == null || s.getURLEntities().length == 0) {
                     discarded++;
@@ -174,7 +175,8 @@ public class Main {
                     stmt.setString(7, null);
                     stmt.setString(8, null);
                 }
-                stmt.setString(9, format(s.getCreatedAt()));
+                String ts = format(s.getCreatedAt());
+                stmt.setString(9, ts);
                 stmt.setString(10, s.getURLEntities()[0].getExpandedURL());
                 stmt.setString(11, (urls.length > 1 ? s.getURLEntities()[1].getExpandedURL() : null));
 
@@ -184,6 +186,7 @@ public class Main {
                 } else {
                     stmt.setString(12, null);
                 }
+                stmt.setString(13, ts);
                 stmt.addBatch();
 //                System.out.println(String.format("%1$s :: %2$s :: %3$s :: %4$s :: %5$s :: %6$s :: %7$s\n",
 //                        s.getId(), s.getUser().getName(), s.getUser().getScreenName(), s.getText(), s.getUser().getProfileImageURL(),
