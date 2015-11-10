@@ -2,6 +2,7 @@ package org.bitxbit.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -15,8 +16,12 @@ public class Tweet {
     private Date ts;
     private List<String> urls;
     private int clickCount;
-    private boolean liked;
-    private boolean disliked;
+//    private boolean liked;
+//    private boolean disliked;
+    private String originalName;
+    private String originalScreenName;
+    private String originalAvatarUrl;
+    private String tweetImageUrl;
 
     public static class TweetBuilder {
         private Tweet instance;
@@ -57,6 +62,32 @@ public class Tweet {
 
         public TweetBuilder urls(String... urls) {
             instance.urls = Arrays.asList(urls);
+            return this;
+        }
+
+        public TweetBuilder url(String url) {
+            if (instance.urls == null) instance.urls = new ArrayList<>();
+            instance.urls.add(url);
+            return this;
+        }
+
+        public TweetBuilder originalName(String on) {
+            instance.originalName = on;
+            return this;
+        }
+
+        public TweetBuilder originalScreenName(String osn) {
+            instance.originalScreenName = osn;
+            return this;
+        }
+
+        public TweetBuilder originalAvatarUrl(String oau) {
+            instance.originalAvatarUrl = oau;
+            return this;
+        }
+
+        public TweetBuilder tweetImageUrl(String url) {
+            instance.tweetImageUrl = url;
             return this;
         }
 
@@ -105,25 +136,45 @@ public class Tweet {
         return clickCount;
     }
 
-    @JsonProperty("l")
-    public boolean isLiked() {
-        return liked;
+    @JsonProperty("o_name")
+    public String getOriginalName() {
+        return originalName;
     }
 
-    @JsonProperty("not_l")
-    public boolean isDisliked() {
-        return disliked;
+    @JsonProperty("o_sn")
+    public String getOriginalScreenName() {
+        return originalScreenName;
     }
+
+    @JsonProperty("o_au")
+    public String getOriginalAvatarUrl() {
+        return originalAvatarUrl;
+    }
+
+    @JsonProperty("img")
+    public String getTweetImageUrl() {
+        return tweetImageUrl;
+    }
+
+//    @JsonProperty("l")
+//    public boolean isLiked() {
+//        return liked;
+//    }
+//
+//    @JsonProperty("not_l")
+//    public boolean isDisliked() {
+//        return disliked;
+//    }
 
     public void setClickCount(int clickCount) {
         this.clickCount = clickCount;
     }
 
-    public void setLiked(boolean liked) {
-        this.liked = liked;
-    }
-
-    public void setDisliked(boolean disliked) {
-        this.disliked = disliked;
-    }
+//    public void setLiked(boolean liked) {
+//        this.liked = liked;
+//    }
+//
+//    public void setDisliked(boolean disliked) {
+//        this.disliked = disliked;
+//    }
 }

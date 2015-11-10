@@ -16,7 +16,7 @@ public class TweetDao {
 
     private Connection getConnection() {
         try {
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306", "aditya", "");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306", "aditya", "tw33t5");
             return con;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -46,7 +46,15 @@ public class TweetDao {
                     .tweet(rs.getString("tweet"))
                     .avatarUrl(rs.getString("avatar_url"))
                     .ts(rs.getDate("ts"))
-                    .urls(rs.getString("url1"), rs.getString("url2"));
+                    .originalName(rs.getString("orig_name"))
+                    .originalScreenName(rs.getString("orig_screen_name"))
+                    .originalAvatarUrl(rs.getString("orig_avatar_url"))
+                    .tweetImageUrl(rs.getString("media_url"));
+                String url1 = rs.getString("url1");
+                if (url1 != null && !url1.isEmpty()) tb.url(url1);
+                String url2 = rs.getString("url2");
+                if (url2 != null && !url2.isEmpty()) tb.url(url2);
+
                 tweets.add(tb.build());
             }
 
