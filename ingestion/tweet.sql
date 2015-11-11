@@ -1,19 +1,15 @@
-DROP TABLE IF EXISTS `tweet`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tweet` (
-  `id` bigint(20) NOT NULL,
-  `name` varchar(21) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `screen_name` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `orig_name` varchar(21) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `orig_screen_name` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tweet` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `avatar_url` varchar(2100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `orig_avatar_url` varchar(2100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ts` datetime NOT NULL,
-  `url1` varchar(2100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `url2` varchar(2100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `media_url` varchar(2100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `read` tinyint(1) DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE tweet (
+    id bigint NOT NULL,
+    name character varying(21) DEFAULT NULL::character varying,
+    screen_name character varying(16) DEFAULT NULL::character varying,
+    orig_name character varying(21) DEFAULT NULL::character varying,
+    orig_screen_name character varying(16) DEFAULT NULL::character varying,
+    tweet character varying(200) DEFAULT NULL::character varying,
+    avatar_url character varying(2100) DEFAULT NULL::character varying,
+    orig_avatar_url character varying(2100) DEFAULT NULL::character varying,
+    ts timestamp without time zone NOT NULL,
+    url1 character varying(2100) DEFAULT NULL::character varying,
+    url2 character varying(2100) DEFAULT NULL::character varying,
+    media_url character varying(2100) DEFAULT NULL::character varying,
+    read boolean DEFAULT false
+);

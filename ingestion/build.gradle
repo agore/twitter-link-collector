@@ -7,8 +7,9 @@ repositories {
 
 dependencies {
     compile 'org.apache.commons:commons-lang3:3.3.2'
-    compile 'mysql:mysql-connector-java:5.1.37'
+//    compile 'mysql:mysql-connector-java:5.1.37'
     compile 'org.twitter4j:twitter4j-core:4.0+'
+    compile 'org.postgresql:postgresql:9.4-1205-jdbc42'
 }
 
 // Task "distZip" added by plugin "java-library-distribution":
