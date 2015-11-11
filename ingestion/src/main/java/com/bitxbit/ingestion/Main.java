@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Properties;
 
 public class Main {
-    private static final int MAX = 3;
-    public static final int NUM_TWEETS = 5;
+    private static final int MAX = 5;
+    public static final int NUM_TWEETS = 200;
 
     public static void main(String[] args) {
         Main main = new Main();
