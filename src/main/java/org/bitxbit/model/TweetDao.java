@@ -8,34 +8,25 @@ import java.util.List;
 public class TweetDao {
     static {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    private Connection getConnection() {
-        try {
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306", "aditya", "tw33t5");
-            return con;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+    private Connection getConnection() throws SQLException {
+            return DriverManager.getConnection("jdbc:postgresql://localhost/postgres?user=aditya&password=tw33t5");
     }
 
     public List<Tweet> getTweets(int length, long beforeId) {
-        Connection con = getConnection();
-        if (con == null) {
-            return Collections.EMPTY_LIST;
-        }
-
+        Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;
         try {
+            con = getConnection();
             stmt = con.createStatement();
             String beforeSubQuery = beforeId != 0 ? String.format("and id < %1$s", beforeId) : "";
-            String query = String.format("select * from lh.tweet where (url1 is not null and url1 != \"\") %1$s order by id desc limit %2$s", beforeSubQuery, length);
+            String query = String.format("select * from tweet where (url1 is not null and url1 != '') %1$s order by id desc limit %2$s", beforeSubQuery, length);
             rs = stmt.executeQuery(query);
             List<Tweet> tweets = new ArrayList<Tweet>(length);
             while (rs.next()) {
@@ -45,7 +36,7 @@ public class TweetDao {
                     .screenName(rs.getString("screen_name"))
                     .tweet(rs.getString("tweet"))
                     .avatarUrl(rs.getString("avatar_url"))
-                    .ts(rs.getDate("ts"))
+                    .ts(rs.getTimestamp("ts"))
                     .originalName(rs.getString("orig_name"))
                     .originalScreenName(rs.getString("orig_screen_name"))
                     .originalAvatarUrl(rs.getString("orig_avatar_url"))
