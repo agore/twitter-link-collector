@@ -2,6 +2,7 @@ package org.bitxbit.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -55,8 +56,8 @@ public class Tweet {
             return this;
         }
 
-        public TweetBuilder ts(Date ts) {
-            instance.ts = ts;
+        public TweetBuilder ts(Timestamp ts) {
+            instance.ts = new Date(ts.getTime());
             return this;
         }
 
