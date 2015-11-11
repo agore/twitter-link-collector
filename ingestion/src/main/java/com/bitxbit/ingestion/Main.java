@@ -5,22 +5,22 @@ import twitter4j.auth.AccessToken;
 
 import java.io.*;
 import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Date;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 public class Main {
-    private static final int MAX = 5;
-    public static final int NUM_TWEETS = 200;
+    private static final int MAX = 3;
+    public static final int NUM_TWEETS = 5;
 
     public static void main(String[] args) {
         Main main = new Main();
-        main.ingest();
+        main.ingest2();
     }
 
     static {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -73,29 +73,101 @@ public class Main {
 
     }
 
+    private void ingest2() {
+        Twitter twitter = TwitterFactory.getSingleton();
+        auth(twitter);
+
+        //this is slightly ineffecient because we might have seen a more recent tweet
+        //that didn't make it to the DB
+        long sinceId = getMostRecentTweetId();
+
+        Paging paging = new Paging(1, NUM_TWEETS);
+        if (sinceId != 0) {
+            //Our table's not empty
+            paging.sinceId(sinceId);
+        }
+
+        List<Status> statuses = readTimeline(twitter, paging);
+        if (statuses == null || statuses.size() == 0) {
+            System.out.println("No tweets found to start with. Exiting");
+            return;
+        }
+
+        int discarded = dumpStatusesToDb(statuses);
+        int total = statuses.size();
+        int looper = 1;
+        long maxId = getMaxId(statuses);
+        while (looper < MAX) {
+            System.out.println("Starting loop " + looper);
+            paging = new Paging(1, NUM_TWEETS).maxId(maxId);
+            if (sinceId != 0) paging.sinceId(sinceId);
+            statuses = readTimeline(twitter, paging);
+            if (statuses == null || statuses.size() == 0) {
+                break;
+            }
+            maxId = getMaxId(statuses);
+            total += statuses.size();
+            looper++;
+            discarded += dumpStatusesToDb(statuses);
+        }
+
+        System.out.println("Processed: " + total);
+        System.out.println("Wrote: " + (total - discarded));
+        System.out.println("Discarded: " + discarded);
+    }
+
+    private long getMaxId(List<Status> statuses) {
+        if (statuses == null || statuses.size() == 0) return -1;
+        return statuses.get(statuses.size() - 1).getId() - 1;
+    }
+
+    private long getMostRecentTweetId() {
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            con = getConnection();
+            if (con == null) return 0;
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("SELECT id from tweet order by ts desc limit 1");
+            if (rs.next()) {
+                long id = rs.getLong("id");
+                return id;
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+            System.out.println(e.getNextException());
+        } finally {
+            if (rs != null) try {rs.close(); }catch(Exception e) {}
+            if (stmt != null) try {stmt.close(); }catch(Exception e) {}
+            if (con != null) try {con.close(); }catch(Exception e) {}
+        }
+
+        return 0;
+    }
+
     private Paging getPaging(long sinceId, long maxId) {
         Paging paging = null;
         if (maxId == 0 && sinceId == 0) {
             paging = new Paging(1, NUM_TWEETS);
         } else if (maxId == 0 && sinceId != 0) {
-            paging = new Paging(1, NUM_TWEETS, sinceId);
+            paging = new Paging(1, NUM_TWEETS).sinceId(sinceId);
         } else if (maxId != 0 && sinceId == 0) {
-            paging = new Paging(1, NUM_TWEETS);
-            paging.setMaxId(maxId);
+            paging = new Paging(1, NUM_TWEETS).maxId(maxId);
         } else {
-            paging = new Paging(1, NUM_TWEETS, sinceId, maxId);
+            paging = new Paging(1, NUM_TWEETS).sinceId(sinceId).maxId(maxId);
         }
         return paging;
     }
 
-    private Connection getConnection() {
-        try {
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306", "aditya", "tw33t5");
+    private Connection getConnection() throws  SQLException {
+//        try {
+            Connection con = DriverManager.getConnection("jdbc:postgresql://localhost/postgres?user=aditya&password=tw33t5");
             return con;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
     }
 
     public void auth(Twitter twitter) {
@@ -151,9 +223,9 @@ public class Main {
         try {
             conn = getConnection();
             if (conn == null) return 0;
-            stmt = conn.prepareStatement("INSERT INTO lh.tweet (id, name, screen_name, tweet, avatar_url, " +
+            stmt = conn.prepareStatement("INSERT INTO tweet (id, name, screen_name, tweet, avatar_url, " +
                     "orig_name, orig_screen_name, orig_avatar_url, ts, url1, url2, media_url) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ts=?");
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             for (Status s : statuses) {
                 if (s.getURLEntities() == null || s.getURLEntities().length == 0) {
                     discarded++;
@@ -175,8 +247,8 @@ public class Main {
                     stmt.setString(7, null);
                     stmt.setString(8, null);
                 }
-                String ts = format(s.getCreatedAt());
-                stmt.setString(9, ts);
+                Timestamp ts = new Timestamp(s.getCreatedAt().getTime());
+                stmt.setTimestamp(9, ts);
                 stmt.setString(10, s.getURLEntities()[0].getExpandedURL());
                 stmt.setString(11, (urls.length > 1 ? s.getURLEntities()[1].getExpandedURL() : null));
 
@@ -186,7 +258,6 @@ public class Main {
                 } else {
                     stmt.setString(12, null);
                 }
-                stmt.setString(13, ts);
                 stmt.addBatch();
 //                System.out.println(String.format("%1$s :: %2$s :: %3$s :: %4$s :: %5$s :: %6$s :: %7$s\n",
 //                        s.getId(), s.getUser().getName(), s.getUser().getScreenName(), s.getText(), s.getUser().getProfileImageURL(),
@@ -198,17 +269,13 @@ public class Main {
             stmt.executeBatch();
         } catch (SQLException e) {
             e.printStackTrace();
+            System.out.println(e.getNextException());
         } finally {
             if (stmt != null) try { stmt.close(); } catch(Exception e) {}
             if (conn != null) try { conn.close(); } catch(Exception e) {}
         }
 
         return discarded;
-    }
-
-    private String format(Date createdAt) {
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(createdAt);
-
     }
 
     public List<Status> readTimeline(Twitter twitter, Paging paging) {
