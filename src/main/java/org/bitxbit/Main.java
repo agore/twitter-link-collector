@@ -11,7 +11,7 @@ import java.util.Map;
  *
  */
 public class Main {
-    public static final String BASE_URI = "http://localhost:8080/myapp/";
+    public static final String BASE_URI = "http://localhost:5050/myapp/";
 
 //    /**
 //     * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
