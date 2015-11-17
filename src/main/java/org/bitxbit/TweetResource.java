@@ -1,19 +1,12 @@
 package org.bitxbit;
 
+import org.bitxbit.model.IngestionResponse;
 import org.bitxbit.model.Tweet;
 import org.bitxbit.model.TweetDao;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.CacheControl;
-import java.util.Date;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -42,5 +35,14 @@ public class TweetResource {
         CacheControl cc = new CacheControl();
         cc.setMaxAge(60 * 20);
         return builder.cacheControl(cc).tag(eTag).build();
+    }
+
+    @POST
+    @Path("/ingest")
+    public Response ingest(@Context Request request) {
+        IngestionResponse resp = new Ingestor().ingest();
+        Response.ResponseBuilder builder = Response.created(URI.create("/tweets/all?lowest_id=" + resp.getSinceId()));
+        builder.entity(resp);
+        return builder.build();
     }
 }

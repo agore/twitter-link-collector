@@ -1,29 +1,22 @@
 package org.bitxbit.model;
 
+import org.bitxbit.db.ConnectionUtils;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class TweetDao {
-    static {
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Connection getConnection() throws SQLException {
-            return DriverManager.getConnection("jdbc:postgresql://localhost/postgres?user=aditya&password=tw33t5");
-    }
 
     public List<Tweet> getTweets(int length, long beforeId) {
         Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            con = getConnection();
+            con = ConnectionUtils.getConnection();
             stmt = con.createStatement();
             String beforeSubQuery = beforeId != 0 ? String.format("and id < %1$s", beforeId) : "";
             String query = String.format("select * from tweet where (url1 is not null and url1 != '') %1$s order by id desc limit %2$s", beforeSubQuery, length);

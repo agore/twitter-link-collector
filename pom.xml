@@ -95,6 +95,11 @@
             <artifactId>postgresql</artifactId>
             <version>9.4-1205-jdbc42</version>
         </dependency>
+        <dependency>
+            <groupId>org.twitter4j</groupId>
+            <artifactId>twitter4j-core</artifactId>
+            <version>4.0.4</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
