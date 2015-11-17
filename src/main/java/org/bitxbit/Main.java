@@ -44,7 +44,7 @@ public class Main {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
 
-        Server jettyServer = new Server(8080);
+        Server jettyServer = new Server(Integer.valueOf(System.getenv("PORT")));
         jettyServer.setHandler(context);
 
         ServletHolder jerseyServlet = context.addServlet(
