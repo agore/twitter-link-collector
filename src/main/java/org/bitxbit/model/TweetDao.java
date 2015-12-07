@@ -12,6 +12,7 @@ import java.util.List;
 public class TweetDao {
 
     public List<Tweet> getTweets(int length, long beforeId) {
+        if (length == 0) length = 50;
         Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -33,7 +34,8 @@ public class TweetDao {
                     .originalName(rs.getString("orig_name"))
                     .originalScreenName(rs.getString("orig_screen_name"))
                     .originalAvatarUrl(rs.getString("orig_avatar_url"))
-                    .tweetImageUrl(rs.getString("media_url"));
+                    .tweetImageUrl(rs.getString("media_url"))
+                    .read(rs.getBoolean("read"));
                 String url1 = rs.getString("url1");
                 if (url1 != null && !url1.isEmpty()) tb.url(url1);
                 String url2 = rs.getString("url2");
@@ -52,4 +54,19 @@ public class TweetDao {
         }
     }
 
+    public void updateReadState(long id) {
+        Connection con = null;
+        Statement stmt = null;
+
+        try {
+            con = ConnectionUtils.getConnection();
+            stmt = con.createStatement();
+            stmt.executeUpdate("update tweet set read=TRUE where id=" + id);
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        } finally {
+            if (stmt != null) try {stmt.close(); } catch(Exception e) {}
+            if (con != null) try { con.close(); } catch(Exception e) {}
+        }
+    }
 }

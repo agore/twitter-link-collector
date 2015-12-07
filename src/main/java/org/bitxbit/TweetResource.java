@@ -45,4 +45,13 @@ public class TweetResource {
         builder.entity(resp);
         return builder.build();
     }
+
+    @PUT
+    @Path("/read")
+    public Response read(@QueryParam("id") long id) {
+        TweetDao dao = new TweetDao();
+        dao.updateReadState(id);
+
+        return Response.ok().build();
+    }
 }

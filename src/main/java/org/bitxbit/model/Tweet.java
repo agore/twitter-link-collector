@@ -23,6 +23,7 @@ public class Tweet {
     private String originalScreenName;
     private String originalAvatarUrl;
     private String tweetImageUrl;
+    private boolean read;
 
     public static class TweetBuilder {
         private Tweet instance;
@@ -92,6 +93,11 @@ public class Tweet {
             return this;
         }
 
+        public TweetBuilder read(boolean read) {
+            instance.read = read;
+            return this;
+        }
+
         public Tweet build() {
             return instance;
         }
@@ -155,6 +161,11 @@ public class Tweet {
     @JsonProperty("img")
     public String getTweetImageUrl() {
         return tweetImageUrl;
+    }
+
+    @JsonProperty("read")
+    public boolean getRead() {
+        return read;
     }
 
 //    @JsonProperty("l")
