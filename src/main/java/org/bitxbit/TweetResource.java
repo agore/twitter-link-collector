@@ -1,6 +1,7 @@
 package org.bitxbit;
 
 import org.bitxbit.model.IngestionResponse;
+import org.bitxbit.model.ReadTweet;
 import org.bitxbit.model.Tweet;
 import org.bitxbit.model.TweetDao;
 
@@ -46,12 +47,15 @@ public class TweetResource {
         return builder.build();
     }
 
-    @PUT
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     @Path("/read")
-    public Response read(@QueryParam("id") long id) {
+    public Response read(List<ReadTweet> reads) {
         TweetDao dao = new TweetDao();
-        dao.updateReadState(id);
-
+//        dao.updateReadState(id);
+        for (ReadTweet r : reads) {
+            System.out.println(r.getId() + " :: " + r.isRead());
+        }
         return Response.ok().build();
     }
 }

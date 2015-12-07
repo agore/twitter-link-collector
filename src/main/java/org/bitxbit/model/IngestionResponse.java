@@ -1,6 +1,7 @@
 package org.bitxbit.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Created by agore on 11/17/15.

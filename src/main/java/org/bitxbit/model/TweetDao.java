@@ -54,14 +54,19 @@ public class TweetDao {
         }
     }
 
-    public void updateReadState(long id) {
+    public void updateReadState(long[] id) {
+        StringBuilder b = new StringBuilder("(");
+        for (long l : id) {
+            b.append(id).append(",");
+        }
+        b.append(")");
+
         Connection con = null;
         Statement stmt = null;
-
         try {
             con = ConnectionUtils.getConnection();
             stmt = con.createStatement();
-            stmt.executeUpdate("update tweet set read=TRUE where id=" + id);
+            stmt.executeUpdate("update tweet set read=TRUE where id in " + b.toString());
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         } finally {
