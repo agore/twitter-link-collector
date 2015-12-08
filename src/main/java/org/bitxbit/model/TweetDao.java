@@ -56,8 +56,9 @@ public class TweetDao {
 
     public void updateReadState(long[] id) {
         StringBuilder b = new StringBuilder("(");
-        for (long l : id) {
-            b.append(id).append(",");
+        for (int i = 0; i < id.length; i++) {
+            b.append(id[i]);
+            if (i < id.length - 1) b.append(",");
         }
         b.append(")");
 
