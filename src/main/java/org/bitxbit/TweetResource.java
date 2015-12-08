@@ -51,11 +51,14 @@ public class TweetResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/read")
     public Response read(List<ReadTweet> reads) {
-        TweetDao dao = new TweetDao();
-//        dao.updateReadState(id);
-        for (ReadTweet r : reads) {
-            System.out.println(r.getId() + " :: " + r.isRead());
+        long[] ids = new long[reads.size()];
+        for (int i = 0; i < reads.size(); i++) {
+            ids[i] = reads.get(i).getId();
         }
+//        for (ReadTweet r : reads) {
+//            System.out.println(r.getId() + " :: " + r.isRead());
+//        }
+        new TweetDao().updateReadState(ids);
         return Response.ok().build();
     }
 }
