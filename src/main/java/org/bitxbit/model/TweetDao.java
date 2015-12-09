@@ -74,7 +74,7 @@ public class TweetDao {
         }
     }
 
-    public List getReadIds(int length, long beforeId) {
+    public List getReadIds(int length, long afterId) {
         if (length == 0) length = 50;
         Connection con = null;
         Statement stmt = null;
@@ -82,7 +82,7 @@ public class TweetDao {
         try {
             con = ConnectionUtils.getConnection();
             stmt = con.createStatement();
-            String beforeSubQuery = beforeId != 0 ? String.format("and id < %1$s", beforeId) : "";
+            String beforeSubQuery = afterId != 0 ? String.format("and id > %1$s", afterId) : "";
             String query = String.format("select id from tweet where read=TRUE %1$s order by id desc limit %2$s", beforeSubQuery, length);
             rs = stmt.executeQuery(query);
             List<Long> ret = new ArrayList<>();
