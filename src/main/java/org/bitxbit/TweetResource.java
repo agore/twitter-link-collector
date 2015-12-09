@@ -51,16 +51,15 @@ public class TweetResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/read")
-    public Response read(List<ReadTweet> reads) {
+    public Response markAsRead(List<ReadTweet> reads) {
+        if (reads == null || reads.size() == 0) return Response.ok("{\"updated\": 0}").build();
+
         long[] ids = new long[reads.size()];
         for (int i = 0; i < reads.size(); i++) {
             ids[i] = reads.get(i).getId();
         }
-//        for (ReadTweet r : reads) {
-//            System.out.println(r.getId() + " :: " + r.isRead());
-//        }
-        new TweetDao().markAsRead(ids);
-        return Response.ok().build();
+        int updated = new TweetDao().markAsRead(ids);
+        return Response.ok("{\"updated\" : " + updated + "}").build();
     }
 
     @GET
