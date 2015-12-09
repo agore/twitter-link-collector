@@ -58,7 +58,27 @@ public class TweetResource {
 //        for (ReadTweet r : reads) {
 //            System.out.println(r.getId() + " :: " + r.isRead());
 //        }
-        new TweetDao().updateReadState(ids);
+        new TweetDao().markAsRead(ids);
         return Response.ok().build();
+    }
+
+    @GET
+    @Path("/read_ids")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getReadIds(@Context Request request, @QueryParam("count") int count, @QueryParam("lowest_id") long lowestId) {
+        if (count == 0) count = 50;
+        List<Long> ids = new TweetDao().getReadIds(count, lowestId);
+        if (ids == null || ids.isEmpty()) return Response.noContent().build();
+
+        EntityTag eTag = new EntityTag(String.valueOf(ids.get(0)));
+
+        Response.ResponseBuilder builder = request.evaluatePreconditions(eTag);
+        if (builder == null) {
+            builder = Response.ok(ids);
+        }
+
+        CacheControl cc = new CacheControl();
+        cc.setMaxAge(60 * 20);
+        return builder.cacheControl(cc).tag(eTag).build();
     }
 }

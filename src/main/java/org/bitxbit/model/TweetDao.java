@@ -2,8 +2,6 @@ package org.bitxbit.model;
 
 import org.bitxbit.db.ConnectionUtils;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,8 +17,8 @@ public class TweetDao {
         try {
             con = ConnectionUtils.getConnection();
             stmt = con.createStatement();
-            String beforeSubQuery = beforeId != 0 ? String.format("and id < %1$s", beforeId) : "";
-            String query = String.format("select * from tweet where (url1 is not null and url1 != '') %1$s order by id desc limit %2$s", beforeSubQuery, length);
+            String beforeSubQuery = beforeId != 0 ? String.format("where id < %1$s", beforeId) : "";
+            String query = String.format("select * from tweet %1$s order by id desc limit %2$s", beforeSubQuery, length);
             rs = stmt.executeQuery(query);
             List<Tweet> tweets = new ArrayList<Tweet>(length);
             while (rs.next()) {
@@ -54,7 +52,7 @@ public class TweetDao {
         }
     }
 
-    public void updateReadState(long[] id) {
+    public void markAsRead(long[] id) {
         StringBuilder b = new StringBuilder("(");
         for (int i = 0; i < id.length; i++) {
             b.append(id[i]);
@@ -73,6 +71,32 @@ public class TweetDao {
         } finally {
             if (stmt != null) try {stmt.close(); } catch(Exception e) {}
             if (con != null) try { con.close(); } catch(Exception e) {}
+        }
+    }
+
+    public List getReadIds(int length, long beforeId) {
+        if (length == 0) length = 50;
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            con = ConnectionUtils.getConnection();
+            stmt = con.createStatement();
+            String beforeSubQuery = beforeId != 0 ? String.format("and id < %1$s", beforeId) : "";
+            String query = String.format("select id from tweet where read=TRUE %1$s order by id desc limit %2$s", beforeSubQuery, length);
+            rs = stmt.executeQuery(query);
+            List<Long> ret = new ArrayList<>();
+            while (rs.next()) {
+                ret.add(rs.getLong("id"));
+            }
+
+            return ret;
+        } catch (Exception e) {
+            return Collections.EMPTY_LIST;
+        } finally {
+            try { if (rs != null) rs.close();}catch(Exception e) {}
+            try { if (stmt != null) stmt.close();}catch(Exception e) {}
+            try { if (con != null) con.close();}catch(Exception e) {}
         }
     }
 }
