@@ -52,7 +52,7 @@ public class TweetDao {
         }
     }
 
-    public void markAsRead(long[] id) {
+    public int markAsRead(long[] id) {
         StringBuilder b = new StringBuilder("(");
         for (int i = 0; i < id.length; i++) {
             b.append(id[i]);
@@ -72,6 +72,8 @@ public class TweetDao {
             if (stmt != null) try {stmt.close(); } catch(Exception e) {}
             if (con != null) try { con.close(); } catch(Exception e) {}
         }
+
+        return 0;
     }
 
     public List getReadIds(int length, long afterId) {
