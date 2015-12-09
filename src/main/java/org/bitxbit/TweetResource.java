@@ -8,23 +8,24 @@ import org.bitxbit.model.TweetDao;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Request tweets as follows:
  * /tweets/all?count=3 to get the 3 newest tweets
  * OR
- * /tweets/all?count=3&lowest_id=550482545356181504 to get 2 tweets that have ids lower than lowest_id (i.e. older than lowest_id)
+ * /tweets/all?count=3&older_than_id=550482545356181504 to get 2 tweets that have ids lower than older_than_id
  */
 @Path("tweets")
 public class TweetResource {
     @GET
     @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTweets(@Context Request request, @QueryParam("count") int count, @QueryParam("lowest_id") long lowestId) {
+    public Response getTweets(@Context Request request, @QueryParam("count") int count, @QueryParam("older_than_id") long olderThanId) {
         TweetDao tweetDao = new TweetDao();
-        List<Tweet> tweets = tweetDao.getTweets(count, lowestId);
-        if (tweets == null || tweets.isEmpty()) return Response.noContent().build();
+        List<Tweet> tweets = tweetDao.getTweets(count, olderThanId);
+        if (tweets == null || tweets.isEmpty()) return Response.ok(Collections.EMPTY_LIST).build();
 
         EntityTag eTag = new EntityTag(String.valueOf(tweets.get(0).getId()));
 
@@ -68,7 +69,7 @@ public class TweetResource {
     public Response getReadIds(@Context Request request, @QueryParam("count") int count, @QueryParam("lowest_id") long lowestId) {
         if (count == 0) count = 50;
         List<Long> ids = new TweetDao().getReadIds(count, lowestId);
-        if (ids == null || ids.isEmpty()) return Response.noContent().build();
+        if (ids == null || ids.isEmpty()) return Response.ok(Collections.EMPTY_LIST).build();
 
         EntityTag eTag = new EntityTag(String.valueOf(ids.get(0)));
 
