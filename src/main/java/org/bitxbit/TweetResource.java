@@ -78,7 +78,7 @@ public class TweetResource {
         }
 
         CacheControl cc = new CacheControl();
-        cc.setMaxAge(60 * 20);
+        cc.setMaxAge(30);
         return builder.cacheControl(cc).tag(eTag).build();
     }
 }
