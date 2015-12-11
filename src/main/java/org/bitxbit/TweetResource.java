@@ -65,9 +65,8 @@ public class TweetResource {
     @GET
     @Path("/read_ids")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getReadIds(@Context Request request, @QueryParam("count") int count, @QueryParam("lowest_id") long lowestId) {
-        if (count == 0) count = 50;
-        List<Long> ids = new TweetDao().getReadIds(count, lowestId);
+    public Response getReadIds(@Context Request request, @QueryParam("highest_id") long highestId, @QueryParam("lowest_id") long lowestId) {
+        List<Long> ids = new TweetDao().getReadIds(highestId, lowestId);
         if (ids == null || ids.isEmpty()) return Response.ok(Collections.EMPTY_LIST).build();
 
         EntityTag eTag = new EntityTag(String.valueOf(ids.get(0)));
