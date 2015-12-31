@@ -41,6 +41,7 @@ public class TweetResource {
 
     @POST
     @Path("/ingest")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response ingest(@Context Request request) {
         IngestionResponse resp = new Ingestor().ingest();
         Response.ResponseBuilder builder = Response.created(URI.create("/tweets/all?lowest_id=" + resp.getSinceId()));
