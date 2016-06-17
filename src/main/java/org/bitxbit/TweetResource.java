@@ -60,7 +60,10 @@ public class TweetResource {
             ids[i] = reads.get(i).getId();
         }
         int updated = new TweetDao().markAsRead(ids);
-        return Response.ok("{\"updated\" : " + updated + "}").build();
+        return Response.ok("{\"updated\" : " + updated + "}")
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "POST")
+            .allow("OPTIONS").build();
     }
 
     @GET
